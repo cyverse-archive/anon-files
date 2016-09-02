@@ -16,9 +16,14 @@
 
  (ref-set
    cfg/defaults
-   {:port       "60000"
-    :anon-user  "anonymous"
-    :irods-port "1247"})
+   {:port           "60000"
+    :anon-user      "anonymous"
+    :irods-host     "irods"
+    :irods-port     "1247"
+    :irods-zone     "iplant"
+    :irods-home     "/irods/home"
+    :irods-user     "rods"
+    :irods-password "notprod"})
 
  (ref-set
   cfg/filters
