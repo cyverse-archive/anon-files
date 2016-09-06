@@ -19,7 +19,6 @@ node {
 
 
     stage "Test"
-    sh "docker run --rm --entrypoint 'lein' ${dockerRepo} check"
     sh "docker run --rm --entrypoint 'lein' ${dockerRepo} test"
 
 
