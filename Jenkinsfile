@@ -9,7 +9,7 @@ node {
     git_commit = readFile('GIT_COMMIT').trim()
     echo git_commit
 
-    sh 'grep "(defproject" project.clj | sed -E "s/^[^\"]*\"([^\"]+)\".*$/\1/\" > VERSION'
+    sh 'grep "(defproject" project.clj | sed -E \'s/^[^"]*"([^"]+)".*$/\\1/\' > VERSION'
     version = readFile('VERSION').trim()
     echo version
 
