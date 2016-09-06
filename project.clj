@@ -7,7 +7,7 @@
       (string/trim (:out (sh "git" "rev-parse" "HEAD")))
       ""))
 
-(defproject org.cyverse/anon-files "2.8.0-SNAPSHOT"
+(defproject org.cyverse/anon-files "2.8.1-SNAPSHOT"
   :description "Serves up files and directories that are shared with the anonymous user in iRODS."
   :url "https://github.com/cyverse-de/anon-files"
   :license {:name "BSD"}
