@@ -21,3 +21,4 @@ RUN lein uberjar && \
 RUN ln -s "/usr/bin/java" "/bin/anon-files"
 
 ENTRYPOINT ["anon-files", "-Dlogback.configurationFile=/etc/iplant/de/logging/anon-files-logging.xml", "-cp", ".:anon-files-standalone.jar", "anon_files.core"]
+CMD ["--help"]
