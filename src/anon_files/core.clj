@@ -46,7 +46,7 @@
 (def svc-info
   {:desc "A service that serves up files shared with the iRODS anonymous user."
    :app-name "anon-files"
-   :group-id "org.iplantc"
+   :group-id "org.cyverse"
    :art-id "anon-files"
    :service "anon-files"})
 
