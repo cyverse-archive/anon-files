@@ -1,3 +1,4 @@
+#!groovy
 def repo = "anon-files"
 def dockerUser = "discoenv"
 
