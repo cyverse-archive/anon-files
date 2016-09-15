@@ -36,6 +36,10 @@ node {
         currentBuild.result = "ABORTED"
         slackSend color: 'warning', message: "ABORTED: job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
         throw e
+    } catch (hudson.AbortException e) {
+        currentBuild.result = "ABORTED"
+        slackSend color: 'warning', message: "ABORTED: job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        throw e
     } catch (e) {
         currentBuild.result = "FAILED"
         sh "echo ${e}"
