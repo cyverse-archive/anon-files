@@ -3,6 +3,7 @@ def repo = "anon-files"
 def dockerUser = "discoenv"
 
 node {
+    slackJobDescription = "job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
     try {
         stage "Build"
         checkout scm
@@ -32,18 +33,22 @@ node {
 
         stage "Docker Push"
         sh "docker push ${dockerRepo}"
+
+        if (!hudson.model.Result.SUCCESS.equals(currentBuild.rawBuild.getPreviousBuild()?.getResult())) {
+            slackSend color: 'good', message: "BACK TO PASSING: ${slackJobDescription}"
+        }
     } catch (InterruptedException e) {
         currentBuild.result = "ABORTED"
-        slackSend color: 'warning', message: "ABORTED: job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        slackSend color: 'warning', message: "ABORTED: ${slackJobDescription}"
         throw e
     } catch (hudson.AbortException e) {
         currentBuild.result = "ABORTED"
-        slackSend color: 'warning', message: "ABORTED: job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        slackSend color: 'warning', message: "ABORTED: ${slackJobDescription}"
         throw e
     } catch (e) {
         currentBuild.result = "FAILED"
         sh "echo ${e}"
-        slackSend color: 'danger', message: "FAILED: job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        slackSend color: 'danger', message: "FAILED: ${slackJobDescription}"
         throw e
     }
 }
