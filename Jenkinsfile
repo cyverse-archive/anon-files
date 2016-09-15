@@ -32,6 +32,10 @@ node {
 
         stage "Docker Push"
         sh "docker push ${dockerRepo}"
+    } catch (InterruptedException e) {
+        currentBuild.result = "ABORTED"
+        slackSend color: 'warning', message: "ABORTED: job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+        throw e
     } catch (e) {
         currentBuild.result = "FAILED"
         slackSend color: 'danger', message: "FAILED: job '${env.JOB_NAME}' [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
