@@ -10,12 +10,8 @@ WORKDIR /usr/src/app
 COPY project.clj /usr/src/app/
 RUN lein deps
 
-COPY LICENSE /usr/src/app/
 COPY conf/main/logback.xml /usr/src/app
-COPY README.md /usr/src/app/
-COPY src /usr/src/app/src
-COPY test /usr/src/app/test
-COPY .git /usr/src/app/.git
+COPY . /usr/src/app
 
 RUN lein uberjar && \
     cp target/anon-files-standalone.jar . && \
