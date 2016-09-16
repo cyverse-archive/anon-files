@@ -34,9 +34,7 @@ node {
         stage "Docker Push"
         sh "docker push ${dockerRepo}"
 
-        if (!hudson.model.Result.SUCCESS.equals(currentBuild.rawBuild.getPreviousBuild()?.getResult())) {
-            slackSend color: 'good', message: "BACK TO PASSING: ${slackJobDescription}"
-        }
+        slackSend color: 'good', message: "SUCCESS: ${slackJobDescription}"
     } catch (InterruptedException e) {
         currentBuild.result = "ABORTED"
         slackSend color: 'warning', message: "ABORTED: ${slackJobDescription}"
