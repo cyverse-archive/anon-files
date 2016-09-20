@@ -16,7 +16,7 @@ node {
         version = readFile('VERSION').trim()
         echo version
 
-        dockerRepo = "${dockerUser}/${repo}:${env.BRANCH_NAME}"
+        dockerRepo = "test-${env.BUILD_TAG}"
 
         sh "docker build --rm --build-arg git_commit=${git_commit} --build-arg version=${version} -t ${dockerRepo} ."
 
@@ -38,7 +38,10 @@ node {
 
 
         stage "Docker Push"
-        sh "docker push ${dockerRepo}"
+        dockerPushRepo = "${dockerUser}/${repo}:${env.BRANCH_NAME}"
+        sh "docker tag ${dockerRepo} ${dockerPushRepo}"
+        sh "docker push ${dockerPushRepo}"
+
     } catch (InterruptedException e) {
         currentBuild.result = "ABORTED"
         slackSend color: 'warning', message: "ABORTED: ${slackJobDescription}"
