@@ -2,6 +2,9 @@
   (require [clojure.test :refer :all]
            [anon-files.serve :refer :all]))
 
+(deftest test-which-fails
+         (is (= 0 1)))
+
 (deftest test-contains-bytes-string
   (is (contains-bytes-string? "bytes boo"))
   (is (not (contains-bytes-string? "boo"))))
