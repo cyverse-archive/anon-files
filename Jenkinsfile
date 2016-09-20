@@ -8,12 +8,10 @@ node {
         stage "Build"
         checkout scm
 
-        sh 'git rev-parse HEAD > GIT_COMMIT'
-        git_commit = readFile('GIT_COMMIT').trim()
+        git_commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
         echo git_commit
 
-        sh 'grep "(defproject" project.clj | sed -E \'s/^[^"]*"([^"]+)".*$/\\1/\' > VERSION'
-        version = readFile('VERSION').trim()
+        version = sh(returnStdout: true, script: 'grep "(defproject" project.clj | sed -E \'s/^[^"]*"([^"]+)".*$/\\1/\'').trim()
         echo version
 
         dockerRepo = "test-${env.BUILD_TAG}"
