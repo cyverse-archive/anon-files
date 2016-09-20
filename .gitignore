@@ -9,3 +9,5 @@ pom.xml.asc
 /.nrepl-port
 build.xml
 test2junit
+GIT_COMMIT
+VERSION
