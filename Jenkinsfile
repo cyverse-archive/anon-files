@@ -23,25 +23,29 @@ node {
 
         try {
             stage "Test"
-            dockerTestRunner = "test-${env.BUILD_TAG}"
-            sh "docker run --rm --name ${dockerTestRunner} -v \$(pwd)/test2junit:/usr/src/app/test2junit --entrypoint 'lein' ${dockerRepo} test2junit"
+            try {
+                dockerTestRunner = "test-${env.BUILD_TAG}"
+                sh "docker run --rm --name ${dockerTestRunner} -v \$(pwd)/test2junit:/usr/src/app/test2junit --entrypoint 'lein' ${dockerRepo} test2junit"
+            } finally {
+                junit 'test2junit/xml/*.xml'
+
+                dockerTestCleanup = "test-cleanup-${env.BUILD_TAG}"
+                sh "docker run --rm --name ${dockerTestCleanup} -v \$(pwd):/build -w /build alpine rm -r test2junit"
+            }
+
+            stage "Docker Push"
+            dockerPushRepo = "${dockerUser}/${repo}:${env.BRANCH_NAME}"
+            sh "docker tag ${dockerRepo} ${dockerPushRepo}"
+            sh "docker push ${dockerPushRepo}"
         } finally {
-            junit 'test2junit/xml/*.xml'
             sh returnStatus: true, script: "docker kill ${dockerTestRunner}"
             sh returnStatus: true, script: "docker rm ${dockerTestRunner}"
 
-            dockerTestCleanup = "test-cleanup-${env.BUILD_TAG}"
-            sh "docker run --rm --name ${dockerTestCleanup} -v \$(pwd):/build -w /build alpine rm -r test2junit"
             sh returnStatus: true, script: "docker kill ${dockerTestCleanup}"
             sh returnStatus: true, script: "docker rm ${dockerTestCleanup}"
+
+            sh returnStatus: true, script: "docker rmi ${dockerRepo}"
         }
-
-
-        stage "Docker Push"
-        dockerPushRepo = "${dockerUser}/${repo}:${env.BRANCH_NAME}"
-        sh "docker tag ${dockerRepo} ${dockerPushRepo}"
-        sh "docker push ${dockerPushRepo}"
-
     } catch (InterruptedException e) {
         currentBuild.result = "ABORTED"
         slackSend color: 'warning', message: "ABORTED: ${slackJobDescription}"
