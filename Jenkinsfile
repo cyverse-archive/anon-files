@@ -2,7 +2,7 @@
 def repo = "anon-files"
 def dockerUser = "discoenv"
 
-node {
+node('docker') {
     slackJobDescription = "job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
     try {
         stage "Build"
