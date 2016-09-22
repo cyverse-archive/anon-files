@@ -28,6 +28,6 @@
                  [ring "1.5.0"]]
   :plugins [[lein-ring "0.9.3"]
             [jonase/eastwood "0.2.3"]
-            [test2junit "1.1.3"]]
+            [test2junit "1.2.2"]]
   :eastwood {:exclude-namespaces [:test-paths]
              :linters [:wrong-arity :wrong-ns-form :wrong-pre-post :wrong-tag :misplaced-docstrings]})
