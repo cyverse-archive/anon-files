@@ -1,12 +1,11 @@
 #!groovy
-def repo = "anon-files"
-def dockerUser = "discoenv"
-
 node('docker') {
     slackJobDescription = "job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
     try {
         stage "Build"
         checkout scm
+
+        service = readProperties file: 'service.properties'
 
         git_commit = sh(returnStdout: true, script: "git rev-parse HEAD").trim()
         echo git_commit
@@ -32,7 +31,7 @@ node('docker') {
             }
 
             stage "Docker Push"
-            dockerPushRepo = "${dockerUser}/${repo}:${env.BRANCH_NAME}"
+            dockerPushRepo = "${service.dockerUser}/${service.repo}:${env.BRANCH_NAME}"
             sh "docker tag ${dockerRepo} ${dockerPushRepo}"
             sh "docker push ${dockerPushRepo}"
         } finally {
