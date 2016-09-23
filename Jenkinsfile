@@ -18,15 +18,16 @@ node('docker') {
         sh "docker build --rm --build-arg git_commit=${git_commit} --build-arg version=${version} -t ${dockerRepo} ."
 
 
+        dockerTestRunner = "test-${env.BUILD_TAG}"
+        dockerTestCleanup = "test-cleanup-${env.BUILD_TAG}"
+        dockerPusher = "push-${env.BUILD_TAG}"
         try {
             stage "Test"
             try {
-                dockerTestRunner = "test-${env.BUILD_TAG}"
                 sh "docker run --rm --name ${dockerTestRunner} -v \$(pwd)/test2junit:/usr/src/app/test2junit --entrypoint 'lein' ${dockerRepo} test2junit"
             } finally {
                 junit 'test2junit/xml/*.xml'
 
-                dockerTestCleanup = "test-cleanup-${env.BUILD_TAG}"
                 sh "docker run --rm --name ${dockerTestCleanup} -v \$(pwd):/build -w /build alpine rm -r test2junit"
             }
 
@@ -36,7 +37,8 @@ node('docker') {
             withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'jenkins-docker-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME']]) {
                 sh """docker run -e DOCKER_USERNAME -e DOCKER_PASSWORD \\
                                  -v /var/run/docker.sock:/var/run/docker.sock \\
-                                 --rm docker:\$(docker version --format '{{ .Server.Version }}') \\
+                                 --rm --name ${dockerPusher} \\
+                                 docker:\$(docker version --format '{{ .Server.Version }}') \\
                                  sh -e -c \\
                       'docker login -u \"\$DOCKER_USERNAME\" -p \"\$DOCKER_PASSWORD\" && \\
                        docker push ${dockerPushRepo} && \\
@@ -48,6 +50,9 @@ node('docker') {
 
             sh returnStatus: true, script: "docker kill ${dockerTestCleanup}"
             sh returnStatus: true, script: "docker rm ${dockerTestCleanup}"
+
+            sh returnStatus: true, script: "docker kill ${dockerPusher}"
+            sh returnStatus: true, script: "docker rm ${dockerPusher}"
 
             sh returnStatus: true, script: "docker rmi ${dockerRepo}"
         }
