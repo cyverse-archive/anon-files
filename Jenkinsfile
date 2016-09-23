@@ -36,7 +36,7 @@ node('docker') {
             withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'jenkins-docker-credentials', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME']]) {
                 sh """docker run -e DOCKER_USERNAME -e DOCKER_PASSWORD \\
                                  -v /var/run/docker.sock:/var/run/docker.sock \\
-                                 --rm martinsthiago/docker-client \\
+                                 --rm docker \\
                                  sh -e -c \\
                       'docker login -u \"\$DOCKER_USERNAME\" -p \"\$DOCKER_PASSWORD\" && \\
                        docker push ${dockerPushRepo} && \\
