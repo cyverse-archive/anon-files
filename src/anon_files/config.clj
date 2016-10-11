@@ -55,6 +55,41 @@
   [props config-valid configs]
   "anon-user" "anonymous")
 
+(cc/defprop-optstr amqp-uri
+  "The URI for the connection to the AMQP broker."
+  [props config-valid configs]
+  "amqp-uri" "amqp://guest:guest@rabbit:5672/")
+
+(cc/defprop-optstr exchange-name
+  "The name of the AMQP exchange to use."
+  [props config-valid configs]
+  "exchange-name" "de")
+
+(cc/defprop-optboolean exchange-durable?
+  "Whether or not the AMQP exchange is durable."
+  [props config-valid configs]
+  "exchange-durable" true)
+
+(cc/defprop-optboolean exchange-auto-delete?
+  "Whether or not the AMQP exchange will be automatically deleted."
+  [props config-valid configs]
+  "exchange-auto-delete" false)
+
+(cc/defprop-optstr queue-name
+  "The name of the AMQP queue."
+  [props config-valid configs]
+  "queue-name" "events.anon-files.queue")
+
+(cc/defprop-optstr queue-durable?
+  "Whether or now the queue is durable."
+  [props config-valid configs]
+  "queue-durable" true)
+
+(cc/defprop-optstr queue-auto-delete?
+  "Whether or not the queue is automatically deleted."
+  [props config-valid configs]
+  "queue-auto-delete" false)
+
 (defn pprint-to-string
   [m]
   (let [sw (java.io.StringWriter.)]
