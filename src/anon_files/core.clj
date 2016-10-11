@@ -2,14 +2,13 @@
   (:gen-class)
   (:use [compojure.core]
         [anon-files.serve]
-        [anon-files.config]
         [ring.util.http-response])
   (:require [compojure.route :as route]
             [ring.middleware.params :refer [wrap-params]]
             [ring.middleware.keyword-params :refer [wrap-keyword-params]]
             [clojure.string :as string]
             [common-cli.core :as ccli]
-            [common-cfg.cfg :as cfg]
+            [anon-files.config :as cfg]
             [clojure.tools.logging :as log]
             [me.raynes.fs :as fs]
             [service-logging.thread-context :as tc]))
@@ -56,7 +55,7 @@
     (let [{:keys [options arguments errors summary]} (ccli/handle-args svc-info args cli-options)]
       (when-not (fs/exists? (:config options))
         (ccli/exit 1 (str "The default --config file " (:config options) " does not exist.")))
-      (cfg/load-config options)
-      (log/info "Started listening on" (:port @cfg/cfg))
+      (cfg/load-config-from-file (:config options))
+      (log/info "Started listening on" (cfg/listen-port))
       (require 'ring.adapter.jetty)
-      ((eval 'ring.adapter.jetty/run-jetty) app {:port (Integer/parseInt (:port @cfg/cfg))}))))
+      ((eval 'ring.adapter.jetty/run-jetty) app {:port (cfg/listen-port)}))))
