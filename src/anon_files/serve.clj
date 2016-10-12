@@ -8,7 +8,7 @@
             [clj-jargon.paging :as paging]
             [cemerick.url :as url]
             [clojure.tools.logging :as log]
-            [common-cfg.cfg :as cfg]
+            [anon-files.config :as cfg]
             [clojure.string :as string]
             [anon-files.inputs :as inputs]))
 
@@ -16,12 +16,12 @@
   []
   (dosync
    (init/init
-    (:irods-host @cfg/cfg)
-    (:irods-port @cfg/cfg)
-    (:irods-user @cfg/cfg)
-    (:irods-password @cfg/cfg)
-    (:irods-home @cfg/cfg)
-    (:irods-zone @cfg/cfg)
+    (cfg/irods-host)
+    (str (cfg/irods-port))
+    (cfg/irods-user)
+    (cfg/irods-password)
+    (cfg/irods-home)
+    (cfg/irods-zone)
     "")))
 
 (defn range-request?
@@ -137,7 +137,7 @@
    (do (log/warn "[anon-files]" filepath "is not a file.")
        false)
 
-   (not (perms/is-readable? cm (:anon-user @cfg/cfg) filepath))
+   (not (perms/is-readable? cm (cfg/anon-user) filepath))
    (do (log/warn "[anon-files]" filepath "is not readable.")
        false)
 
@@ -154,7 +154,7 @@
      (do (log/warn "[anon-files]" ~filepath "is not a file.")
        (-> (response "Not a file.") (status 403)))
 
-     (not (perms/is-readable? ~cm (:anon-user @cfg/cfg) ~filepath))
+     (not (perms/is-readable? ~cm (cfg/anon-user) ~filepath))
      (do (log/warn "[anon-files]" ~filepath "is not readable.")
        (-> (response "Not allowed.") (status 403)))
 
