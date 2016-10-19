@@ -1,11 +1,10 @@
-FROM clojure:alpine
+FROM discoenv/clojure-base:master
 
-RUN apk add --update git && \
-    rm -rf /var/cache/apk
+ENV CONF_TEMPLATE=/usr/src/app/anon-files.properties.tmpl
+ENV CONF_FILENAME=anon-files.properties
+ENV PROGRAM=anon-files
 
 VOLUME ["/etc/iplant/de"]
-
-WORKDIR /usr/src/app
 
 COPY project.clj /usr/src/app/
 RUN lein deps
@@ -18,8 +17,7 @@ RUN lein uberjar && \
 
 RUN ln -s "/usr/bin/java" "/bin/anon-files"
 
-ENTRYPOINT ["anon-files", "-Dlogback.configurationFile=/etc/iplant/de/logging/anon-files-logging.xml", "-cp", ".:anon-files-standalone.jar", "anon_files.core"]
-CMD ["--help"]
+ENTRYPOINT ["run-service", "-Dlogback.configurationFile=/etc/iplant/de/logging/anon-files-logging.xml", "-cp", ".:anon-files-standalone.jar", "anon_files.core"]
 
 ARG git_commit=unknown
 ARG version=unknown

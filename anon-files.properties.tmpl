@@ -1,0 +1,9 @@
+{{- with $base := (printf "configs/%s" (env "DE_ENV")) -}}
+{{ with $v := (key (printf "%s/irods/host" $base)) }}irods-host: {{ $v }}{{ end }}
+{{ with $v := (key (printf "%s/irods/port" $base)) }}irods-port: {{ $v }}{{ end }}
+{{ with $v := (key (printf "%s/irods/user" $base)) }}irods-user: {{ $v }}{{ end }}
+{{ with $v := (key (printf "%s/irods/pass" $base)) }}irods-password: {{ $v }}{{ end }}
+{{ with $v := (key (printf "%s/irods/zone" $base)) }}irods-zone: {{ $v }}{{ end }}
+{{ with $v := (key (printf "%s/irods/base" $base)) }}irods-home: {{ $v }}{{ end }}
+{{ with $v := (key (printf "%s/amqp/uri" $base)) }}amqp-uri: {{ $v }}{{ end }}
+{{- end -}}
