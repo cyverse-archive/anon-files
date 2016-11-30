@@ -4,18 +4,7 @@ A Discovery Environment service that serves up files that have been shared with 
 
 ## Build
 
-Periodically -- as in once a day or so -- run the following command from the top-level of the backend checkout:
-
-    > docker run --rm -it -v ~/.m2/:/root/.m2/ -v $(pwd):/build -w /build discoenv/buildenv lein exec build-all.clj lein-plugins libs
-
-That will build the latest version of all of the libraries for the backend and place them into your local .m2 directory. As annoying as that is to type, it's still less annoying than trying to get a full development environment set up on your local box.
-
-To build a new version of anon-files run the following inside the services/anon-files/ directory of the checkout (which contains this file):
-
-    > docker run --rm -v ~/.m2/:/root/.m2/ -v $(pwd):/build -w /build discoenv/buildenv lein uberjar
-    > docker build -t discoenv/anon-files:dev .
-
-The build of the uberjar is separate from the build of the container image to keep the size of the container image a bit more reasonable.
+```docker build --rm -t discoenv/anon-files:dev .```
 
 ## Configure
 
@@ -30,7 +19,7 @@ anon-files's configuration file must be in the properties file format. Here's an
     anon-user = anonymous
     port = 60000
     log-file =
-    
+
 The Dockerfile is expecting anon-files to be listening on port 60000, so it's not recommended to place something different in the config file.
 
 Here are the command-line options:
