@@ -3,16 +3,6 @@
            [anon-files.serve]
            [anon-files.ranges]))
 
-(deftest test-contains-bytes-string
-  (let [contains-bytes-string? #'anon-files.serve/contains-bytes-string?]
-    (is (contains-bytes-string? "bytes boo"))
-    (is (not (contains-bytes-string? "boo")))))
-
-(deftest test-multiple-ranges
-  (let [multiple-ranges? #'anon-files.serve/multiple-ranges?]
-    (is (multiple-ranges? "0-10,11-20"))
-    (is (not (multiple-ranges? "0-10")))))
-
 (deftest test-trim-equals
   (let [trim-equals #'anon-files.ranges/trim-equals]
     (is (= "boo" (trim-equals "=boo")))

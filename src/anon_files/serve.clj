@@ -30,17 +30,6 @@
   (and (contains? req :headers)
        (contains? (:headers req) "range")))
 
-(defn- contains-bytes-string?
-  "Returns true if the header starts with 'bytes'."
-  [header]
-  (let [trimmed-header (string/trim header)]
-    (.startsWith trimmed-header "bytes")))
-
-(defn- multiple-ranges?
-  "Returns true if the header field specifies multiple ranges."
-  [^String header]
-  (not= (.indexOf header ",") -1))
-
 (defn- valid?
   [cm filepath]
   (cond
