@@ -1,31 +1,32 @@
 (ns anon-files.core-test
   (require [clojure.test :refer :all]
-           [anon-files.serve]))
+           [anon-files.serve]
+           [anon-files.ranges]))
 
 (deftest test-contains-bytes-string
   (let [contains-bytes-string? #'anon-files.serve/contains-bytes-string?]
     (is (contains-bytes-string? "bytes boo"))
     (is (not (contains-bytes-string? "boo")))))
 
-(deftest test-trim-equals
-  (let [trim-equals #'anon-files.serve/trim-equals]
-    (is (= "boo" (trim-equals "=boo")))
-    (is (= " boo" (trim-equals " = boo ")))))
-
 (deftest test-multiple-ranges
   (let [multiple-ranges? #'anon-files.serve/multiple-ranges?]
     (is (multiple-ranges? "0-10,11-20"))
     (is (not (multiple-ranges? "0-10")))))
 
+(deftest test-trim-equals
+  (let [trim-equals #'anon-files.ranges/trim-equals]
+    (is (= "boo" (trim-equals "=boo")))
+    (is (= " boo" (trim-equals " = boo ")))))
+
 (deftest test-extract-byte-ranges
-  (let [extract-byte-ranges #'anon-files.serve/extract-byte-ranges]
+  (let [extract-byte-ranges #'anon-files.ranges/extract-byte-ranges]
     (is (= (extract-byte-ranges "0-10,11-20,21-30")
            '("0-10" "11-20" "21-30")))
     (is (= (extract-byte-ranges "-10,11-")
            '("-10" "11-")))))
 
 (deftest test-categorize-ranges
-  (let [categorize-ranges #'anon-files.serve/categorize-ranges]
+  (let [categorize-ranges #'anon-files.ranges/categorize-ranges]
     (is (= (categorize-ranges '("0-10" "11-20" "21-30"))
            '({:range "0-10" :kind "bounded"}
              {:range "11-20" :kind "bounded"}
@@ -43,7 +44,7 @@
              {:range "-1" :kind "unbounded-negative"})))))
 
 (deftest test-parse-ranges
-  (let [parse-ranges #'anon-files.serve/parse-ranges]
+  (let [parse-ranges #'anon-files.ranges/parse-ranges]
     (is (= (parse-ranges '({:range "0-10" :kind "bounded"}
                            {:range "11-20" :kind "bounded"}
                            {:range "21-30" :kind "bounded"}))
@@ -68,7 +69,7 @@
              {:range "-1" :kind "unbounded-negative" :lower "-1"})))))
 
 (deftest test-extract-ranges
-  (let [extract-ranges #'anon-files.serve/extract-ranges]
+  (let [extract-ranges #'anon-files.ranges/extract-ranges]
     (is (= (extract-ranges {:headers {"range" "bytes=0-20"}})
            '({:range "0-20" :lower "0" :upper "20" :kind "bounded"})))
     (is (= (extract-ranges {:headers {"range" "bytes=20-"}})
