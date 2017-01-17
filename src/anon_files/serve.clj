@@ -94,11 +94,6 @@
   [cm filepath]
   (validated cm filepath (ops/input-stream cm filepath)))
 
-(defn- range-body
-  [cm filepath start-byte end-byte]
-  (if (>= (- end-byte start-byte) 0)
-    (inputs/chunk-stream cm filepath start-byte end-byte)))
-
 (defn- not-satisfiable-response
   [filesize]
   {:status  416
@@ -106,20 +101,13 @@
    :headers {"Accept-Ranges" "bytes"
              "Content-Range" (str "bytes */" filesize)}})
 
-(defn- calc-lower
-  [lower-val]
-  (if-not (pos? lower-val)
-    0
-    lower-val))
-
-(defn- calc-upper
-  [upper-val file-size]
-  (if (> upper-val file-size)
-    file-size
-    upper-val))
+(defn- range-body
+  [cm filepath start-byte end-byte]
+  (if (>= (- end-byte start-byte) 0)
+    (inputs/chunk-stream cm filepath start-byte end-byte)))
 
 (defn- handle-range-request
-  [cm filepath file-size lower upper num-bytes]
+  [cm filepath {:keys [file-size lower upper num-bytes]}]
   (log/warn
      "File information:\n"
      "File Path:" filepath "\n"
@@ -139,6 +127,18 @@
 
    :else
    (range-body cm filepath lower upper)))
+
+(defn- calc-lower
+  [lower-val]
+  (if-not (pos? lower-val)
+    0
+    lower-val))
+
+(defn- calc-upper
+  [upper-val file-size]
+  (if (> upper-val file-size)
+    file-size
+    upper-val))
 
 (defn- bounded-request-info
   [cm filepath range]
@@ -190,14 +190,6 @@
      :num-bytes filesize
      :kind      (:kind range)}))
 
-(defn- make-request
-  [cm filepath info]
-  (let [file-size (:file-size info)
-        lower     (:lower info)
-        upper     (:upper info)
-        num-bytes (:num-bytes info)]
-    (handle-range-request cm filepath file-size lower upper num-bytes)))
-
 (defn- request-info
   [cm filepath range]
   (case (:kind range)
@@ -241,13 +233,6 @@
   (log/warn "Response map:\n" (dissoc response :body))
   response)
 
-(defn- anon-input-stream
-  [filepath filesize info]
-  (init/with-jargon (jargon-cfg) [cm]
-    (if-not range
-      (not-satisfiable-response filesize)
-      (make-request cm filepath info))))
-
 (defn- get-req-info
   [req]
   (init/with-jargon (jargon-cfg) [cm]
@@ -265,7 +250,8 @@
       (if (range-request? req)
         (log-headers
          (let [info     (get-req-info req)
-               body     (anon-input-stream filepath (:filesize info) info)]
+               body     (init/with-jargon (jargon-cfg) [cm]
+                          (handle-range-request cm filepath info))]
            (if (map? body)
              body
              {:status  206
