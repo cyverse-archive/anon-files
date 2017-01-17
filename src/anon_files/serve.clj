@@ -12,7 +12,7 @@
             [clojure.string :as string]
             [anon-files.inputs :as inputs]))
 
-(defn jargon-cfg
+(defn- jargon-cfg
   []
   (dosync
    (init/init
@@ -24,18 +24,18 @@
     (cfg/irods-zone)
     "")))
 
-(defn range-request?
+(defn- range-request?
   [req]
   (and (contains? req :headers)
        (contains? (:headers req) "range")))
 
-(defn contains-bytes-string?
+(defn- contains-bytes-string?
   "Returns true if the header starts with 'bytes'."
   [header]
   (let [trimmed-header (string/trim header)]
     (.startsWith trimmed-header "bytes")))
 
-(defn trim-equals
+(defn- trim-equals
   "Returns a string with the leading equals sign trimmed off. The
    entire header is trimmed of leading and trailing whitespace as a result."
   [header]
@@ -44,7 +44,7 @@
       (string/replace-first trimmed-header "=" "")
       trimmed-header)))
 
-(defn trim-bytes
+(defn- trim-bytes
   "Returns a string with the leading 'bytes=' trimmed off. The entire header is trimmed
    of leading and trailing whitespace as a result."
   [header]
@@ -53,17 +53,17 @@
       (string/replace-first trimmed-header "bytes" "")
       trimmed-header)))
 
-(defn multiple-ranges?
+(defn- multiple-ranges?
   "Returns true if the header field specifies multiple ranges."
   [^String header]
   (not= (.indexOf header ",") -1))
 
-(defn extract-byte-ranges
+(defn- extract-byte-ranges
   "Returns a vector of tuples."
   [header]
   (re-seq #"[0-9]*\s*-\s*[0-9]*" header))
 
-(defn categorize-ranges
+(defn- categorize-ranges
   "Categorize ranges based on whether they're a bounded range, an unbounded
    range, or a single byte request. The return value will be in the format:
        {
@@ -84,7 +84,7 @@
                       :else              "unknown"))]
     (map #(mapify %1 (range-kind %1)) ranges)))
 
-(defn parse-ranges
+(defn- parse-ranges
   "Parses ranges based on type. A range of type will have an :lower and :upper field added,
    a range of type unbounded will have a :lower field and no :upper field. A field of :byte
    will have a :lower and :upper bound that is set to the same value. An unknown range will
@@ -115,7 +115,7 @@
                            range))]
     (map delegate ranges)))
 
-(defn extract-ranges
+(defn- extract-ranges
   "Parses the range header and returns a list of ranges. The returned value will be the
    same as (parse-ranges)."
   [req]
@@ -126,7 +126,7 @@
       (categorize-ranges)
       (parse-ranges)))
 
-(defn valid?
+(defn- valid?
   [cm filepath]
   (cond
    (not (info/exists? cm filepath))
@@ -175,7 +175,7 @@
      (merge (base-file-header filepath lastmod)
             {"Content-Length" (str (inc (- end-byte start-byte)))})))
 
-(defn serve
+(defn- serve
   [cm filepath]
   (validated cm filepath (ops/input-stream cm filepath)))
 
@@ -184,20 +184,20 @@
   (if (>= (- end-byte start-byte) 0)
     (inputs/chunk-stream cm filepath start-byte end-byte)))
 
-(defn not-satisfiable-response
+(defn- not-satisfiable-response
   [filesize]
   {:status  416
    :body    "The requested range is not satisfiable."
    :headers {"Accept-Ranges" "bytes"
              "Content-Range" (str "bytes */" filesize)}})
 
-(defn calc-lower
+(defn- calc-lower
   [lower-val]
   (if-not (pos? lower-val)
     0
     lower-val))
 
-(defn calc-upper
+(defn- calc-upper
   [upper-val file-size]
   (if (> upper-val file-size)
     file-size
@@ -225,7 +225,7 @@
    :else
    (range-body cm filepath lower upper)))
 
-(defn bounded-request-info
+(defn- bounded-request-info
   [cm filepath range]
   (let [file-size (info/file-size cm filepath)
         retval {:file-size file-size
@@ -235,7 +235,7 @@
                 :kind      (:kind range)}]
     (assoc retval :num-bytes (inc (- (:upper retval) (:lower retval))))))
 
-(defn unbounded-request-info
+(defn- unbounded-request-info
   [cm filepath range]
   (let [file-size (info/file-size cm filepath)
         retval {:file-size file-size
@@ -245,7 +245,7 @@
                 :kind      (:kind range)}]
     (assoc retval :num-bytes (inc (- (:upper retval) (:lower retval))))))
 
-(defn unbounded-negative-info
+(defn- unbounded-negative-info
   [cm filepath range]
   (let [file-size (info/file-size cm filepath)
         retval {:file-size file-size
@@ -255,7 +255,7 @@
                 :kind      (:kind range)}]
     (assoc retval :num-bytes (inc (- (:upper retval) (:lower retval))))))
 
-(defn byte-request-info
+(defn- byte-request-info
   [cm filepath range]
   (let [file-size (info/file-size cm filepath)
         retval {:file-size file-size
@@ -265,7 +265,7 @@
                 :kind      (:kind range)}]
     (assoc retval :num-bytes (inc (- (:upper retval) (:lower retval))))))
 
-(defn normal-request-info
+(defn- normal-request-info
   [cm filepath range]
   (let [filesize (info/file-size cm filepath)]
     {:file-size filesize
@@ -275,7 +275,7 @@
      :num-bytes filesize
      :kind      (:kind range)}))
 
-(defn make-request
+(defn- make-request
   [cm filepath info]
   (let [file-size (:file-size info)
         lower     (:lower info)
@@ -283,7 +283,7 @@
         num-bytes (:num-bytes info)]
     (handle-range-request cm filepath file-size lower upper num-bytes)))
 
-(defn request-info
+(defn- request-info
   [cm filepath range]
   (case (:kind range)
     "bounded"
@@ -300,7 +300,7 @@
 
     (normal-request-info cm filepath range)))
 
-(defn content-range-str
+(defn- content-range-str
   [info]
   (let [kind  (:kind info)
         lower (:lower info)
@@ -321,19 +321,19 @@
 
       (str "bytes " lower "-" upper "/" filesize))))
 
-(defn log-headers
+(defn- log-headers
   [response]
   (log/warn "Response map:\n" (dissoc response :body))
   response)
 
-(defn anon-input-stream
+(defn- anon-input-stream
   [filepath filesize info]
   (init/with-jargon (jargon-cfg) [cm]
     (if-not range
       (not-satisfiable-response filesize)
       (make-request cm filepath info))))
 
-(defn get-req-info
+(defn- get-req-info
   [req]
   (init/with-jargon (jargon-cfg) [cm]
     (if-not (valid? cm (url/url-decode (:uri req)))

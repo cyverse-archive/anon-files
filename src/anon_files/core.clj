@@ -1,7 +1,6 @@
 (ns anon-files.core
   (:gen-class)
   (:use [compojure.core]
-        [anon-files.serve]
         [ring.util.http-response])
   (:require [compojure.route :as route]
             [anon-files.amqp :as amqp]
@@ -11,6 +10,7 @@
             [clojure.string :as string]
             [common-cli.core :as ccli]
             [anon-files.config :as cfg]
+            [anon-files.serve :as serve]
             [clojure.tools.logging :as log]
             [me.raynes.fs :as fs]
             [service-logging.thread-context :as tc]))
@@ -35,9 +35,9 @@
        (if (and expecting (not= expecting "anon-files"))
          (internal-server-error (str "Hello from anon-files. Error: expecting " expecting "."))
          "Hello from anon-files."))
-  (HEAD "/*" [:as req] (log/spy (handle-head-request req)))
-  (GET "/*" [:as req] (log/spy (handle-request req)))
-  (OPTIONS "/*" [:as req] (log/spy (handle-options-request req))))
+  (HEAD "/*" [:as req] (log/spy (serve/handle-head-request req)))
+  (GET "/*" [:as req] (log/spy (serve/handle-request req)))
+  (OPTIONS "/*" [:as req] (log/spy (serve/handle-options-request req))))
 
 (def app
   (-> #'app-routes
