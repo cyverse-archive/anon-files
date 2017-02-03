@@ -16,7 +16,7 @@
   :main ^:skip-aot anon-files.core
   :profiles {:uberjar {:aot :all}}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.cyverse/clj-jargon "2.8.0"
+                 [org.cyverse/clj-jargon "2.8.1"
                   :exclusions [[org.slf4j/slf4j-log4j12]
                                [log4j]]]
                  [org.cyverse/service-logging "2.8.0"]
@@ -32,5 +32,6 @@
   :plugins [[lein-ring "0.9.3"]
             [jonase/eastwood "0.2.3"]
             [test2junit "1.2.2"]]
+  :jvm-opts ["-Dlogback.configurationFile=/etc/iplant/de/logging/anon-files-logging.xml"]
   :eastwood {:exclude-namespaces [:test-paths]
              :linters [:wrong-arity :wrong-ns-form :wrong-pre-post :wrong-tag :misplaced-docstrings]})

@@ -3,9 +3,9 @@
         [clj-jargon.item-ops]
         [clj-jargon.item-info]
         [clj-jargon.paging])
-  (:import [java.io InputStream]))
+  (:import [java.io InputStream BufferedInputStream]))
 
-(defn chunk-stream
+(defn raw-chunk-stream
   [cm ^String filepath start-byte end-byte]
   (let [raf (random-access-file cm filepath)
         location (atom start-byte)]
@@ -25,26 +25,33 @@
                  (first buf))
                -1)))
         ([b]
-           (if (<= @location end-byte)
-             (let [diff       (inc (- end-byte @location))
-                   len        (if (> (count b) diff)
-                                diff
-                                (count b))
-                   bytes-read (.read raf b 0 len)]
-               (reset! location (+ @location bytes-read))
-               bytes-read)
-             -1))
+         (if (<= @location end-byte)
+           (let [diff       (inc (- end-byte @location))
+                 len        (if (> (count b) diff)
+                              diff
+                              (count b))
+                 bytes-read (.read raf b 0 len)]
+             (reset! location (+ @location bytes-read))
+             bytes-read)
+           -1))
         ([b off len]
-           (if (<= @location end-byte)
-             (let [diff (inc (- end-byte @location))
-                   len (if (> len diff)
-                         diff
-                         len)
-                   bytes-read (.read raf b off len)]
-               (reset! location (+ @location bytes-read))
-               bytes-read)
-             -1)))
+         (if (<= @location end-byte)
+           (let [diff (inc (- end-byte @location))
+                 len (if (> len diff)
+                       diff
+                       len)
+                 bytes-read (.read raf b off len)]
+             (reset! location (+ @location bytes-read))
+             bytes-read)
+           -1)))
       (reset [] (.seek raf 0 SEEK-START))
       (skip [n] (.skipBytes raf n))
       (close []
         (.close raf)))))
+
+(def ^:private buffer-size (* 8192 8))
+
+(defn chunk-stream
+    "Same as raw-chunk-stream, but uses proxy-input-stream to automatically close the context-manager when it's done, and buffers the InputStream"
+    [cm ^String filepath start-byte end-byte]
+    (proxy-input-stream cm (BufferedInputStream. (raw-chunk-stream cm filepath start-byte end-byte) buffer-size)))

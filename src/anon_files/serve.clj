@@ -13,17 +13,16 @@
             [clojure.string :as string]
             [anon-files.inputs :as inputs]))
 
-(defn- jargon-cfg
-  []
-  (dosync
-   (init/init
-    (cfg/irods-host)
-    (str (cfg/irods-port))
-    (cfg/irods-user)
-    (cfg/irods-password)
-    (cfg/irods-home)
-    (cfg/irods-zone)
-    "")))
+(def ^:private jargon-cfg
+  (memoize
+    #(init/init
+       (cfg/irods-host)
+       (str (cfg/irods-port))
+       (cfg/irods-user)
+       (cfg/irods-password)
+       (cfg/irods-home)
+       (cfg/irods-zone)
+       "")))
 
 (defn- range-request?
   [req]
@@ -108,7 +107,7 @@
    (> lower upper)
    (not-satisfiable-response file-size)
 
-   (> lower file-size)
+   (>= lower file-size)
    (not-satisfiable-response file-size)
 
    (= lower upper)
@@ -223,12 +222,14 @@
   response)
 
 (defn- get-req-info
-  [req]
-  (init/with-jargon (jargon-cfg) [cm]
-    (if-not (valid? cm (url/url-decode (:uri req)))
-      (throw (Exception. "Bad")))
-    (let [range (first (ranges/extract-ranges req))]
-      (request-info cm (url/url-decode (:uri req)) range))))
+  ([req]
+   (init/with-jargon (jargon-cfg) [cm]
+     (get-req-info cm req)))
+  ([cm req]
+   (if-not (valid? cm (url/url-decode (:uri req)))
+     (throw (Exception. "Bad")))
+   (let [range (first (ranges/extract-ranges req))]
+     (request-info cm (url/url-decode (:uri req)) range))))
 
 (defn handle-request
   [req]
@@ -238,15 +239,15 @@
     (try
       (if (range-request? req)
         (log-headers
-         (let [info     (get-req-info req)
-               body     (init/with-jargon (jargon-cfg) [cm]
-                          (handle-range-request cm filepath info))]
-           (if (map? body)
-             body
-             {:status  206
-              :body    body
-              :headers (assoc (file-header filepath (:lastmod info) (:lower info) (:upper info))
-                         "Content-Range" (content-range-str info))})))
+          (init/with-jargon (jargon-cfg) :auto-close false [cm]
+           (let [info     (get-req-info cm req)
+                 body     (handle-range-request cm filepath info)]
+             (if (map? body)
+               body
+               {:status  206
+                :body    body
+                :headers (assoc (file-header filepath (:lastmod info) (:lower info) (:upper info))
+                           "Content-Range" (content-range-str info))}))))
         (init/with-jargon (jargon-cfg) [cm]
           (serve cm filepath)))
       (catch Exception e
@@ -261,7 +262,7 @@
       (log-headers
        (validated cm filepath
                   (if (range-request? req)
-                    (let [info (get-req-info req)]
+                    (let [info (get-req-info cm req)]
                       {:status  200
                        :body    ""
                        :headers (assoc (file-header filepath (:lastmod info) (:lower info) (:upper info))
