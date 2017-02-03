@@ -11,6 +11,7 @@
             [anon-files.config :as cfg]
             [anon-files.ranges :as ranges]
             [clojure.string :as string]
+            [clojure.java.io :as io]
             [anon-files.inputs :as inputs]))
 
 (def ^:private jargon-cfg
@@ -83,9 +84,9 @@
   (validated cm filepath (ops/input-stream cm filepath)))
 
 (defn- not-satisfiable-response
-  [filesize]
+  [cm filesize]
   {:status  416
-   :body    "The requested range is not satisfiable."
+   :body    (init/proxy-input-stream cm (io/input-stream (.getBytes "The requested range is not satisfiable.")))
    :headers {"Accept-Ranges" "bytes"
              "Content-Range" (str "bytes */" filesize)}})
 
@@ -105,10 +106,10 @@
      "Number bytes:" num-bytes "\n")
   (cond
    (> lower upper)
-   (not-satisfiable-response file-size)
+   (not-satisfiable-response cm file-size)
 
    (>= lower file-size)
-   (not-satisfiable-response file-size)
+   (not-satisfiable-response cm file-size)
 
    (= lower upper)
    (range-body cm filepath lower upper)
