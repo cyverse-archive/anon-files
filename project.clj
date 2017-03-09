@@ -21,7 +21,7 @@
                                [log4j]]]
                  [org.cyverse/service-logging "2.8.0"]
                  [org.cyverse/common-cli "2.8.0"]
-                 [org.cyverse/clojure-commons "2.8.0"]
+                 [org.cyverse/clojure-commons "2.8.2"]
                  [org.cyverse/event-messages "0.0.1"]
                  [com.novemberain/langohr "3.5.1"]
                  [com.cemerick/url "0.1.1"]
