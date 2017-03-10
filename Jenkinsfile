@@ -52,6 +52,10 @@ node('docker') {
                          docker logout'"""
               }
             }
+            stage "Update JIRA"
+            step([$class: 'hudson.plugins.jira.JiraIssueUpdater',
+                    issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'],
+                    scm: scm])
         } finally {
             sh returnStatus: true, script: "docker kill ${dockerTestRunner}"
             sh returnStatus: true, script: "docker rm ${dockerTestRunner}"
