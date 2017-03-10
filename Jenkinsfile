@@ -52,10 +52,6 @@ node('docker') {
                          docker logout'"""
               }
             }
-            stage "Update JIRA"
-            step([$class: 'hudson.plugins.jira.JiraIssueUpdater',
-                    issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'],
-                    scm: scm])
         } finally {
             sh returnStatus: true, script: "docker kill ${dockerTestRunner}"
             sh returnStatus: true, script: "docker rm ${dockerTestRunner}"
@@ -67,6 +63,10 @@ node('docker') {
             sh returnStatus: true, script: "docker rm ${dockerPusher}"
 
             sh returnStatus: true, script: "docker rmi ${dockerRepo}"
+
+            step([$class: 'hudson.plugins.jira.JiraIssueUpdater',
+                    issueSelector: [$class: 'hudson.plugins.jira.selector.DefaultIssueSelector'],
+                    scm: scm])
         }
     } catch (InterruptedException e) {
         currentBuild.result = "ABORTED"
