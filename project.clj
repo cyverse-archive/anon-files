@@ -24,7 +24,7 @@
                  [org.cyverse/clojure-commons "2.8.2"]
                  [org.cyverse/event-messages "0.0.1"]
                  [com.novemberain/langohr "3.5.1"]
-                 [com.cemerick/url "0.1.1"]
+                 [com.cemerick/url "0.1.1" :exclusions [com.cemerick/clojurescript.test]]
                  [medley "0.6.0"]
                  [compojure "1.5.0"]
                  [ring "1.5.0"]
