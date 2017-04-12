@@ -16,7 +16,7 @@
   :main ^:skip-aot anon-files.core
   :profiles {:uberjar {:aot :all}}
   :dependencies [[org.clojure/clojure "1.8.0"]
-                 [org.cyverse/clj-jargon "2.8.2"
+                 [org.cyverse/clj-jargon "2.8.3"
                   :exclusions [[org.slf4j/slf4j-log4j12]
                                [log4j]]]
                  [org.cyverse/service-logging "2.8.0"]
