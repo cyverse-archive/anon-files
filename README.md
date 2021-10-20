@@ -1,3 +1,7 @@
+# WARNING
+
+This project is deprecated. The functionality was moved into the `kifshare` service, which in turn is mostly not used anymore as WebDAV is set up in most installations to allow anonymous access to iRODS.
+
 # anon-files
 
 A Discovery Environment service that serves up files that have been shared with the anonymous user in iRODS.
